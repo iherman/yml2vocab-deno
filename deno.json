@@ -1,0 +1,11 @@
+{
+    "name": "Yaml to vocabulary — Deno version",
+    "version": "1.0.0",
+    "description": "Generation of vocabulary files starting by YAML — deno version",  
+    "main": "main.ts",
+    "author": "Ivan Herman <ivan@w3.org> (https://www.w3.org/People/Ivan/)",
+    "license": "W3C-20150513",
+    "tasks" : {
+        "main": "deno run --allow-read --allow-write main.ts"
+    }
+}

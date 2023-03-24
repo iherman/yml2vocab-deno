@@ -86,14 +86,33 @@ export async function generateVocabularyFiles(yaml_file_name: string, template_f
 
     // Get the two files from the file system (at some point, this can be extended
     // to URL-s using fetch)
-    const [yaml, template] = await Promise.all([
+
+    let yaml = '', template = '';
+    const read_errors: string[] = [];
+    const reads = await Promise.allSettled([
         fs.readFile(`${basename}.yml`,'utf-8'),
         fs.readFile(template_file_name, 'utf-8')
     ]);
 
-    try {
-        const conversion: VocabGeneration = new VocabGeneration(yaml);
+    if (reads[0].status === "fulfilled") {
+        yaml = reads[0].value;
+    } else {
+        read_errors[0] = reads[0].reason;
+    }
+    if (reads[1].status === "fulfilled") {
+        template = reads[1].value
+    } else {
+        read_errors.push(reads[1].reason);
+    }
 
+    if (read_errors.length !== 0) {
+        // One of the two files could not be read, we should abort here:
+        throw(read_errors.join('\n'));
+    }
+
+    const conversion: VocabGeneration = new VocabGeneration(yaml);
+
+    {
         const fs_writes: Promise<void>[] = [
             fs.writeFile(`${basename}.ttl`, conversion.getTurtle()),
             fs.writeFile(`${basename}.jsonld`, conversion.getJSONLD()),
@@ -102,9 +121,14 @@ export async function generateVocabularyFiles(yaml_file_name: string, template_f
         if (context) {
             fs_writes.push(fs.writeFile(`${basename}_context.jsonld`, conversion.getContext()))
         }
-        await Promise.all(fs_writes);    
-    } catch(e) {
-        console.error(`Validation error in the YAML file:\n${JSON.stringify(e,null,4)}`);
-    }
+        const write_errors = (await Promise.allSettled(fs_writes))
+            .filter((result): boolean => result.status === "rejected")
+            .map((result): string => (result.status === "rejected" ? result.reason : ''));
+
+        if (write_errors.length != 0) {
+            // One or more files could not be written, we should throw an exception...
+            throw (write_errors.join('\n'));
+        }
+    }  
 }
 

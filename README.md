@@ -28,12 +28,18 @@ Here are the differences/observations:
         ```
         which simply did not work for `deno`. As a consequence, there is a feature of JSON schemas that is not implemented on the `deno` version.
     - Looking around alternatives for `ajv` lead to the proposal of using [Java Type Definition (JTD)](https://jsontypedef.com) instead of JSON schemas (there is a "native" JTD environment for `deno`), but JTD was simply too poor.
-    - On the positive side I was happy that `deno` implemented the idiom of:
+    - Importing a json file directly into the code in `tsc/node.js` and `deno` follows a different syntax. The former means:
+        ```
+        const schema = require('./vocab.schema.json')
+        ```
+        the latter is
         ```
         import * as schema from "./schema.json" assert {type: "json"};
         ```
-        So I could easily separate the schema itself into a separate file. I know, it is possible to explicitly "read" the schema in `tsc/node.js` using `node:fs` and do it that way, but this simple import statement is so much nicer...
-  - I was disappointed to hit difficulties with the HTML DOM environment here. I would have expected to simply reuse `jsdom` with an import on `npm:jsdom`, but using that at least from this project raised exceptions somewhere deep in the guts of `deno`, that I did not even try to find out what it was. So I had to move, instead, to the "native" `deno-dom` library. However, there are some, albeit minor, differences that makes the code a bit different:
+        It would be nice if these types of differences disappeared at some point...
+
+        I know, it is possible to do this in a portable way through an explicit `node:fs`, but a simple import statement is so much nicer...
+  - I was disappointed to hit difficulties with the HTML DOM environment. I would have expected to simply reuse `jsdom` with an import on `npm:jsdom`, but using that at least from this project raised exceptions somewhere deep in the guts of `deno` that I did not even try to find out what it was. So I had to switch, instead, to the "native" `deno-dom` library. However, I hit some, albeit minor, differences that makes the code a bit different:
     - In `jsdom` one starts with
         ```
         const document = (new JSDOM(template_text)).window.document;
@@ -42,12 +48,12 @@ Here are the differences/observations:
         ```
         const document = (new DOMParser()).parseFromString(template_text, 'text/html');
         ```
-        No big deal, but makes the two versions of the code incompatible yet another point. Too bad.
-    - `deno-dom` does to seem to implement the `Element.style` property. One has to do a `span.setAttribute('style', 'display: none');` instead of `span.style.display = none;`. That could be retrofitted to the original code, but it is a pity one has to do that...
-    - Also, linting (at least in Visual Studio Code) kept complaining about the `HTMLElement` not being defined. I then realized that the code correctly runs, so I could ignored that, but it was irritating.
+        No big deal, but makes the two versions of the code incompatible again. Too bad.
+    - `deno-dom` does to seem to implement the `Element.style` attrinute. One has to do a `span.setAttribute('style', 'display: none');` instead of `span.style.display = none;`. That could be retrofitted to the original code, but it is a pity one has to do that...
+    - Also, linting (at least in Visual Studio Code) kept complaining about the `HTMLElement` not being defined. I then realized that the code correctly runs, so I could ignore that, but it was irritating.
 - I also tried to compile the my script into a single executable, but it failed. It was complaining about the `HTMLElement` and some implicit `any`-s that the linting process accepted without further ado. As some complains of compile were referring to other things, too, which were not clear, I have not tried to chase this down yet... (Note that `compile` is still labeled as experimental. It is indeed strange that running the code works but it cannot compile; I wonder why such differences...)
 
-All in all, it was not too bad to make the conversion. Yes, `deno` is a moving target still, but moving well and, eventually, may overcome the `tsc/node.js` approach. Next time if I have some project to do, I may _start_ with `deno`, rather than using it as an after-thought...
+All in all, it was not too bad to make the conversion. Yes, `deno` is a moving target still, but moving ahead and, eventually, it may overcome the `tsc/node.js` approach. Next time if I have some project to do, I may _start_ with `deno`, rather than using it as an after-thought...
 
 
 

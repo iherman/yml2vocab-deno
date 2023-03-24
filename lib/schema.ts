@@ -1,7 +1,8 @@
-// import Ajv from 'ajv';
-// import Ajv2019, { ErrorObject} from 'npm:ajv/dist/2019';
-// import addFormats from 'npm:ajv-formats';
-// import * as Ajv from './ajv2019.bundle.js';
+/**
+ * Import the YAML file, validate against a JSON schema, and return the data as an object...
+ * 
+ * @packageDocumentation
+ */
 
 import Ajv from 'https://esm.sh/ajv@8.11.0';
 import addFormats from 'https://esm.sh/ajv-formats@2.1.1';
@@ -11,7 +12,7 @@ addFormats(ajv);
 import * as yaml from 'npm:yaml';
 import { RawVocab, ValidationError, ValidationResults } from './common.ts';
 
-import * as schema from "./schema.json" assert {type: "json"};
+import * as schema from "./vocab.schema.json" assert {type: "json"};
 
 /**
  * Perform a JSON Schema validation on the YAML content. Done by converting the YAML content into 
